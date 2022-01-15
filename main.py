@@ -11,7 +11,7 @@ FPS = 60
 
 
 class SpriteGroup(pygame.sprite.Sprite):
-    
+
     def __init__(self):
         super().__init__()
 
@@ -30,7 +30,7 @@ class Sprite(pygame.sprite.Sprite):
         pass
 
 
-class Board():
+class Board(object):
 
     def __init__(self, width=16, height=16, cell_size=40):
         self.width = width
