@@ -2,14 +2,6 @@
 import pygame
 
 
-pygame.init()
-size = (800, 800)
-screen = pygame.display.set_mode(size)
-pygame.display.set_caption("TD")
-clock = pygame.time.Clock()
-FPS = 60
-
-
 class SpriteGroup(pygame.sprite.Sprite):
 
     def __init__(self):
@@ -64,6 +56,12 @@ def start_screen() -> None:
     pass
 
 def main() -> None:
+    pygame.init()
+    size = (800, 800)
+    screen = pygame.display.set_mode(size)
+    pygame.display.set_caption("TD")
+    clock = pygame.time.Clock()
+    FPS = 60
     running = True
     board = Board(16, 16, 40)
     while running:
