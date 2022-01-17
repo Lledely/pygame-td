@@ -1,6 +1,6 @@
 class _Enemy(object):
     
-    def __init__(self, health=1, speed=20, cost=1) -> _Enemy:
+    def __init__(self, health=1, speed=20, cost=1) -> None:
         self.health = health
         self.speed = speed # in pixels per second
         self.cost = cost

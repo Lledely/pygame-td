@@ -1,6 +1,6 @@
 class __Tower(object):
     
-    def __init__(self, damage=1, attack_speed=1, attack_range=1) -> _Tower:
+    def __init__(self, damage=1, attack_speed=1, attack_range=1) -> None:
         self.damage = damage
         self.attack_speed = attack_speed # in shoots per second
         self.attack_range = attack_range

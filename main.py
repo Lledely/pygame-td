@@ -1,5 +1,7 @@
 # Main game file
 import pygame
+import enemies
+import towers
 
 
 class SpriteGroup(pygame.sprite.Sprite):
@@ -14,7 +16,7 @@ class SpriteGroup(pygame.sprite.Sprite):
 
 class Sprite(pygame.sprite.Sprite):
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
         self.rect = None
 
