@@ -1,15 +1,18 @@
+from enemies import _Enemy
+
+
 class __Tower(object):
     
-    def __init__(self, damage=1, attack_speed=1, attack_range=1) -> None:
+    def __init__(self, damage: int=1, attack_speed: int=1, attack_range: int=1) -> None:
         self.damage = damage
         self.attack_speed = attack_speed # in shoots per second
         self.attack_range = attack_range
         
-    def deploy(self, x=0, y=0) -> None:
+    def deploy(self, x: int=0, y: int=0) -> None:
         self.x = x
         self.y = y
     
-    def shot(self, target):
+    def shot(self, target: _Enemy):
         target.hit(self.damage)
 
 
