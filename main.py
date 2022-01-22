@@ -2,6 +2,8 @@
 import pygame
 import enemies
 import towers
+import os
+import sys
 
 
 class SpriteGroup(pygame.sprite.Sprite):
@@ -14,14 +16,22 @@ class SpriteGroup(pygame.sprite.Sprite):
             sprite.get_event(event)
 
 
-class Sprite(pygame.sprite.Sprite):
+class Grass(pygame.sprite.Sprite):
 
-    def __init__(self) -> None:
-        super().__init__()
-        self.rect = None
+    def __init__(self, pos_x, pos_y) -> None:
+        super().__init__(grass_group, all_sprites)
+        self.image = images['grass']
+        self.rect = self.image.get_rect().move(
+            CELL_WIDTH * pos_x, CELL_HEIGHT * pos_y)
 
-    def get_event(self, event: pygame.event):
-        pass
+
+class Road(pygame.sprite.Sprite):
+
+    def __init__(self, pos_x, pos_y) -> None:
+        super().__init__(road_group, all_sprites)
+        self.image = images['road']
+        self.rect = self.image.get_rect().move(CELL_WIDTH * pos_x,
+                                               CELL_HEIGHT * pos_y)
 
 
 class Board(object):
@@ -54,27 +64,82 @@ class Board(object):
         self.on_click(cell)
 
 
+def generate_level(level):
+    new_player, x, y = None, None, None
+    for y in range(len(level)):
+        for x in range(len(level[y])):
+            if level[y][x] == '0':
+                Grass(x, y)
+            elif level[y][x] == '1':
+                Road(x, y)
+                board.board[x][y] = 1
+    return x, y
+
+
+def load_level(filename):
+    filename = "level/" + filename
+    with open(filename, 'r') as mapFile:
+        level_map = [line.strip() for line in mapFile]
+    return level_map
+
+
+def load_image(name, color_key=None):
+    fullname = os.path.join('images', name)
+    try:
+        image = pygame.image.load(fullname)
+    except pygame.error as message:
+        print('Не удаётся загрузить:', name)
+        raise SystemExit(message)
+    image = image.convert_alpha()
+    if color_key is not None:
+        if color_key is -1:
+            color_key = image.get_at((0, 0))
+        image.set_colorkey(color_key)
+    return image
+
+
 def start_screen() -> None:
     pass
 
+
 def main() -> None:
+    global board
     pygame.init()
     size = (800, 800)
     screen = pygame.display.set_mode(size)
     pygame.display.set_caption("TD")
     clock = pygame.time.Clock()
     FPS = 60
+    level_name = '1'
     running = True
     board = Board(16, 16, 40)
+    level = load_level(level_name)
     while running:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
         screen.fill((0, 0, 0))
         board.render(screen)
+        generate_level(level)
+        all_sprites.update()
         pygame.display.flip()
         clock.tick(FPS)
     pygame.quit()
+
+
+images = {
+    # 'tower': load_image('tower.png'),
+    'grass': load_image('grass.png'),
+    'road': load_image('road.png')
+}
+# enemy_image = load_image('enemy.png')
+
+all_sprites = pygame.sprite.Group()
+grass_group = pygame.sprite.Group()
+road_group = pygame.sprite.Group()
+
+
+CELL_WIDTH = CELL_HEIGHT = 40
 
 
 if __name__ == "__main__":
