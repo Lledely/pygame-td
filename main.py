@@ -6,6 +6,13 @@ import os
 import sys
 
 
+pygame.init()
+size = (800, 800)
+SCREEN = pygame.display.set_mode(size)
+pygame.display.set_caption("TD")
+TEXT_SIZE = 30
+TEXT_COLOR = (255, 255, 255)
+
 class SpriteGroup(pygame.sprite.Sprite):
 
     def __init__(self):
@@ -22,7 +29,7 @@ class Grass(pygame.sprite.Sprite):
         super().__init__(grass_group, all_sprites)
         self.image = images['grass']
         self.rect = self.image.get_rect().move(
-            CELL_WIDTH * pos_x, CELL_HEIGHT * pos_y)
+            board.side + CELL_WIDTH * pos_x, board.top + CELL_HEIGHT * pos_y)
 
 
 class Road(pygame.sprite.Sprite):
@@ -30,8 +37,8 @@ class Road(pygame.sprite.Sprite):
     def __init__(self, pos_x, pos_y) -> None:
         super().__init__(road_group, all_sprites)
         self.image = images['road']
-        self.rect = self.image.get_rect().move(CELL_WIDTH * pos_x,
-                                               CELL_HEIGHT * pos_y)
+        self.rect = self.image.get_rect().move(board.side + CELL_WIDTH * pos_x,
+                                               board.top + CELL_HEIGHT * pos_y)
 
 
 class Board(object):
@@ -76,10 +83,10 @@ def generate_level(level):
     return x, y
 
 
-def load_level(filename):
-    filename = "level/" + filename
+def load_level(name):
+    filename = os.path.join('levels', name)
     with open(filename, 'r') as mapFile:
-        level_map = [line.strip() for line in mapFile]
+        level_map = [line.strip().split() for line in mapFile]
     return level_map
 
 
@@ -92,9 +99,9 @@ def load_image(name, color_key=None):
         raise SystemExit(message)
     image = image.convert_alpha()
     if color_key is not None:
-        if color_key is -1:
-            color_key = image.get_at((0, 0))
-        image.set_colorkey(color_key)
+         if color_key == -1:
+             color_key = image.get_at((0, 0))
+         image.set_colorkey(color_key)
     return image
 
 
@@ -102,15 +109,24 @@ def start_screen() -> None:
     pass
 
 
+def show_info(screen: pygame.Surface, wallet: int = 69420, current_round: int = 69, max_round: int = 420) -> None:
+    font = pygame.font.Font(None, TEXT_SIZE)
+    wallet_info = font.render("Money: {}".format(wallet), True, pygame.Color(TEXT_COLOR))
+    round_info = font.render("Round: {}/{}".format(current_round, max_round), True, pygame.Color(TEXT_COLOR))
+    wallet_info_coords = (10, 15)
+    round_info_coords = (410, 15)
+    screen.blit(wallet_info, wallet_info_coords)
+    screen.blit(round_info, round_info_coords)
+
+
 def main() -> None:
     global board
-    pygame.init()
-    size = (800, 800)
-    screen = pygame.display.set_mode(size)
-    pygame.display.set_caption("TD")
+    MAX_ROUND = 40
+    CURRENT_ROUND = 1
+    WALLET = 0
     clock = pygame.time.Clock()
     FPS = 60
-    level_name = '1'
+    level_name = 'level1.txt'
     running = True
     board = Board(16, 16, 40)
     level = load_level(level_name)
@@ -118,12 +134,13 @@ def main() -> None:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
-        screen.fill((0, 0, 0))
-        board.render(screen)
-        generate_level(level)
-        all_sprites.update()
-        pygame.display.flip()
         clock.tick(FPS)
+        SCREEN.fill((0, 0, 0))
+        show_info(SCREEN, WALLET, CURRENT_ROUND, MAX_ROUND)
+        board.render(SCREEN)
+        generate_level(level)
+        all_sprites.draw(SCREEN)
+        pygame.display.flip()
     pygame.quit()
 
 
