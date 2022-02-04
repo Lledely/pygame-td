@@ -12,6 +12,9 @@ SCREEN = pygame.display.set_mode(size)
 pygame.display.set_caption("TD")
 TEXT_SIZE = 30
 TEXT_COLOR = (255, 255, 255)
+WALLET = 0
+CLOCK = pygame.time.Clock()
+FPS = 60
 
 class SpriteGroup(pygame.sprite.Sprite):
 
@@ -155,9 +158,6 @@ def main() -> None:
     global board, screen
     MAX_ROUND = 40
     CURRENT_ROUND = 1
-    WALLET = 0
-    clock = pygame.time.Clock()
-    FPS = 60
     level_name = 'level1.txt'
     running = True
     board = Board(16, 16, 40)
@@ -170,7 +170,7 @@ def main() -> None:
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if event.button == 1:
                     towers_table.pick_tower(event.pos)
-        clock.tick(FPS)
+        CLOCK.tick(FPS)
         SCREEN.fill((0, 0, 0))
         show_info(SCREEN, WALLET, CURRENT_ROUND, MAX_ROUND)
         board.render(SCREEN)

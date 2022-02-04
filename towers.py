@@ -24,16 +24,19 @@ class ShortRangeTower(__Tower):
 
 
 class MiddleRangeTower(__Tower):
+
     def __init__(self) -> None:
         super().__init__(4, 2, 5, 100)
 
 
 class LongRangeTower(__Tower):
+
     def __init__(self) -> None:
         super().__init__(7, 3, 9, 250)
 
 
 class DGTower(__Tower):
+    
     def __init__(self) -> None:
         super().__init__(15, 10, 50, 5000)
 
