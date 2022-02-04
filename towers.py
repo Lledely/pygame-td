@@ -17,7 +17,21 @@ class __Tower(object):
         target.hit(self.damage)
 
 
-class BaseTower(__Tower):
-    pass
+class ShortRangeTower(__Tower):
+    
+    def __init__(self) -> None:
+        super().__init__(2, 2, 3, 50)
+
+class MiddleRangeTower(__Tower):
+    def __init__(self) -> None:
+        super().__init__(4, 2, 5, 100)
+
+class LongRangeTower(__Tower):
+    def __init__(self) -> None:
+        super().__init__(7, 3, 9, 250)
+
+class DGTower(__Tower):
+    def __init__(self) -> None:
+        super().__init__(15, 10, 50, 5000)
 
 # Here will be new towers classes

@@ -13,6 +13,9 @@ class _Enemy(object):
     def death(self, wallet: int) -> None:
         wallet += self.cost
 
+    def damage_player(self, player_health: int) -> None:
+        player_health -= 1
+
 
 class BaseEnemy(_Enemy):
     pass
