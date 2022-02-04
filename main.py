@@ -41,6 +41,38 @@ class Road(pygame.sprite.Sprite):
                                                board.top + CELL_HEIGHT * pos_y)
 
 
+class Selection_of_Towers(object):
+
+    def __init__(self, width: int=1, height: int=4, cell_size: int=135):
+        self.width = width
+        self.height = height
+        self.cell_size = cell_size
+        self.image_height = 100
+        self.image_width = 135
+        self.top = 160
+        self.side = 10
+        self.screen = SCREEN
+
+    def render(self, screen: pygame.display):
+        for y in range(self.height):
+            for x in range(self.width):
+                pygame.draw.rect(screen, pygame.Color(255, 255, 255), (
+                    x * self.cell_size + self.side, y * self.cell_size + self.top, self.cell_size,
+                    self.cell_size), 1)
+                image = load_image("tower.png")
+                image1 = pygame.transform.scale(image, (135, 100))
+                self.screen.blit(image1, (self.side + self.image_width * x, 30 * y + self.top + self.image_height * y))
+
+    def pick_tower(self, pos):
+        y = (pos[1] - self.top) // 135
+        x = (pos[0] - self.side) // 100
+        if 0 <= y <= 3 and x == 0:
+            print('1')
+
+
+
+
+
 class Board(object):
 
     def __init__(self, width: int=16, height: int=16, cell_size: int=40):
@@ -105,10 +137,6 @@ def load_image(name, color_key=None):
     return image
 
 
-def start_screen() -> None:
-    pass
-
-
 def show_info(screen: pygame.Surface, wallet: int = 69420, current_round: int = 69, max_round: int = 420) -> None:
     font = pygame.font.Font(None, TEXT_SIZE)
     wallet_info = font.render("Money: {}".format(wallet), True, pygame.Color(TEXT_COLOR))
@@ -119,8 +147,12 @@ def show_info(screen: pygame.Surface, wallet: int = 69420, current_round: int = 
     screen.blit(round_info, round_info_coords)
 
 
+def start_screen() -> None:
+    pass
+
+
 def main() -> None:
-    global board
+    global board, screen
     MAX_ROUND = 40
     CURRENT_ROUND = 1
     WALLET = 0
@@ -129,15 +161,20 @@ def main() -> None:
     level_name = 'level1.txt'
     running = True
     board = Board(16, 16, 40)
+    towers_table = Selection_of_Towers(1, 4, 135)
     level = load_level(level_name)
     while running:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                if event.button == 1:
+                    towers_table.pick_tower(event.pos)
         clock.tick(FPS)
         SCREEN.fill((0, 0, 0))
         show_info(SCREEN, WALLET, CURRENT_ROUND, MAX_ROUND)
         board.render(SCREEN)
+        towers_table.render(SCREEN)
         generate_level(level)
         all_sprites.draw(SCREEN)
         pygame.display.flip()
