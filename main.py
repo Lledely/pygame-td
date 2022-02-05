@@ -12,9 +12,7 @@ SCREEN = pygame.display.set_mode(size)
 pygame.display.set_caption("TD")
 TEXT_SIZE = 30
 TEXT_COLOR = (255, 255, 255)
-WALLET = 0
-CLOCK = pygame.time.Clock()
-FPS = 60
+towers_locations = [[0] * 16 for i in range(16)]
 
 class SpriteGroup(pygame.sprite.Sprite):
 
@@ -29,7 +27,7 @@ class SpriteGroup(pygame.sprite.Sprite):
 class Grass(pygame.sprite.Sprite):
 
     def __init__(self, pos_x, pos_y) -> None:
-        super().__init__(grass_group, all_sprites)
+        super().__init__(all_sprites)
         self.image = images['grass']
         self.rect = self.image.get_rect().move(
             board.side + CELL_WIDTH * pos_x, board.top + CELL_HEIGHT * pos_y)
@@ -38,7 +36,7 @@ class Grass(pygame.sprite.Sprite):
 class Road(pygame.sprite.Sprite):
 
     def __init__(self, pos_x, pos_y) -> None:
-        super().__init__(road_group, all_sprites)
+        super().__init__(all_sprites)
         self.image = images['road']
         self.rect = self.image.get_rect().move(board.side + CELL_WIDTH * pos_x,
                                                board.top + CELL_HEIGHT * pos_y)
@@ -69,11 +67,15 @@ class Selection_of_Towers(object):
     def pick_tower(self, pos):
         y = (pos[1] - self.top) // 135
         x = (pos[0] - self.side) // 100
-        if 0 <= y <= 3 and x == 0:
-            print('1')
-
-
-
+        if y == 0:
+            obj = towers.ShortRangeTower()
+        if y == 1:
+            obj = towers.MiddleRangeTower()
+        if y == 2:
+            obj = towers.LongRangeTower()
+        if y == 3:
+            obj = towers.DGTower()
+        return obj
 
 
 class Board(object):
@@ -97,7 +99,7 @@ class Board(object):
         if not (self.side <= mouse_pos[0] <= self.side + self.width * self.cell_size and
                 self.top <= mouse_pos[1] <= self.top + self.height * self.cell_size):
             return
-        x = (mouse_pos[0] - self.left) // self.cell_size
+        x = (mouse_pos[0] - self.side) // self.cell_size
         y = (mouse_pos[1] - self.top) // self.cell_size
         return (x, y)
 
@@ -106,11 +108,22 @@ class Board(object):
         self.on_click(cell)
 
 
+class Tower_image(pygame.sprite.Sprite):
+
+    def __init__(self, pos_x, pos_y, tower_type) -> None:
+        super().__init__(all_sprites)
+        self.image = images['tower']
+        self.rect = self.image.get_rect().move(
+            board.side + CELL_WIDTH * pos_x, board.top + CELL_HEIGHT * pos_y)
+
+
 def generate_level(level):
     new_player, x, y = None, None, None
     for y in range(len(level)):
         for x in range(len(level[y])):
-            if level[y][x] == '0':
+            if towers_locations[y][x] != 0:
+                Tower_image(x, y, towers_locations[y][x])
+            elif level[y][x] == '0':
                 Grass(x, y)
             elif level[y][x] == '1':
                 Road(x, y)
@@ -155,24 +168,38 @@ def start_screen() -> None:
 
 
 def main() -> None:
-    global board, screen
+    global board, screen, wallet
     MAX_ROUND = 40
     CURRENT_ROUND = 1
+    clock = pygame.time.Clock()
+    wallet = 1000
+    FPS = 60
     level_name = 'level1.txt'
     running = True
     board = Board(16, 16, 40)
     towers_table = Selection_of_Towers(1, 4, 135)
     level = load_level(level_name)
+    tower_picked = False
     while running:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if event.button == 1:
-                    towers_table.pick_tower(event.pos)
-        CLOCK.tick(FPS)
+                    if not tower_picked:
+                        tower_type = towers_table.pick_tower(event.pos)
+                        tower_picked = True
+                        wallet -= tower_type.cost
+                        print(wallet)
+                        continue
+                    if not(155 <= event.pos[0] <= 800 and 155 <= event.pos[1] <= 800):
+                        continue
+                    x, y = board.get_cell(event.pos)
+                    towers_locations[y][x] = tower_type
+                    tower_picked = False
+        clock.tick(FPS)
         SCREEN.fill((0, 0, 0))
-        show_info(SCREEN, WALLET, CURRENT_ROUND, MAX_ROUND)
+        show_info(SCREEN, wallet, CURRENT_ROUND, MAX_ROUND)
         board.render(SCREEN)
         towers_table.render(SCREEN)
         generate_level(level)
@@ -182,16 +209,13 @@ def main() -> None:
 
 
 images = {
-    # 'tower': load_image('tower.png'),
+    'tower': load_image('tower.png'),
     'grass': load_image('grass.png'),
     'road': load_image('road.png')
 }
 # enemy_image = load_image('enemy.png')
 
 all_sprites = pygame.sprite.Group()
-grass_group = pygame.sprite.Group()
-road_group = pygame.sprite.Group()
-
 
 CELL_WIDTH = CELL_HEIGHT = 40
 
