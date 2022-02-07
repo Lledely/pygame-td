@@ -13,6 +13,7 @@ pygame.display.set_caption("TD")
 TEXT_SIZE = 30
 TEXT_COLOR = (255, 255, 255)
 towers_locations = [[0] * 16 for i in range(16)]
+enemy_list = {}
 
 class SpriteGroup(pygame.sprite.Sprite):
 
@@ -24,10 +25,57 @@ class SpriteGroup(pygame.sprite.Sprite):
             sprite.get_event(event)
 
 
-class Grass(pygame.sprite.Sprite):
+class Tower_image(pygame.sprite.Sprite):
+
+    def __init__(self, pos_x, pos_y, tower_type) -> None:
+        super().__init__(all_sprites)
+        self.image = images['tower']
+        self.rect = self.image.get_rect().move(
+            board.side + CELL_WIDTH * pos_x, board.top + CELL_HEIGHT * pos_y)
+
+
+class Enemy_image(pygame.sprite.Sprite):
 
     def __init__(self, pos_x, pos_y) -> None:
         super().__init__(all_sprites)
+        self.image = images['enemy']
+        self.rect = self.image.get_rect().move(
+            board.side + CELL_WIDTH * pos_x, board.top + CELL_HEIGHT * pos_y)
+        self.x_pos = pos_x
+        self.y_pos = pos_y
+
+    def update(self, obj):
+        x_new = 0
+        y_new = 0
+        direction = enemy_list[obj][0]
+        if pygame.sprite.spritecollideany(self, grass_borders):
+            if direction % 2 == 0:
+                y_new = self.y_pos
+                if board[x_new - 1][y_new] == 0:
+                    direction = 3
+                else:
+                    direction = 1
+            else:
+                x_new = self.x_pos
+                if board[x_new][y_new - 1] == 0:
+                    direction = 0
+                else:
+                    direction = 2
+        t = clock.tick()
+        if direction == 0:
+            enemy_list[obj] = (direction, enemy_list[obj][1] - t * obj.speed, enemy_list[obj][2], enemy_list[obj][-1])
+        elif direction == 1:
+            enemy_list[obj] = (direction, enemy_list[obj][1], enemy_list[obj][2] + t * obj.speed, enemy_list[obj][-1])
+        elif direction == 2:
+            enemy_list[obj] = (direction, enemy_list[obj][1] + t * obj.speed, enemy_list[obj][2], enemy_list[obj][-1])
+        else:
+            enemy_list[obj] = (direction, enemy_list[obj][1], enemy_list[obj][2] - t * obj.speed, enemy_list[obj][-1])
+
+
+class Grass(pygame.sprite.Sprite):
+
+    def __init__(self, pos_x, pos_y) -> None:
+        super().__init__(all_sprites, grass_borders)
         self.image = images['grass']
         self.rect = self.image.get_rect().move(
             board.side + CELL_WIDTH * pos_x, board.top + CELL_HEIGHT * pos_y)
@@ -108,15 +156,6 @@ class Board(object):
         self.on_click(cell)
 
 
-class Tower_image(pygame.sprite.Sprite):
-
-    def __init__(self, pos_x, pos_y, tower_type) -> None:
-        super().__init__(all_sprites)
-        self.image = images['tower']
-        self.rect = self.image.get_rect().move(
-            board.side + CELL_WIDTH * pos_x, board.top + CELL_HEIGHT * pos_y)
-
-
 def generate_level(level):
     new_player, x, y = None, None, None
     for y in range(len(level)):
@@ -168,9 +207,12 @@ def start_screen() -> None:
 
 
 def main() -> None:
-    global board, screen, wallet
+    global board, screen, wallet, enemy_list, clock
     MAX_ROUND = 40
     CURRENT_ROUND = 1
+    ENEMIES_AMOUNT = 10
+    ENTRY = 14
+    count_enemies = 0
     clock = pygame.time.Clock()
     wallet = 1000
     FPS = 60
@@ -195,14 +237,22 @@ def main() -> None:
                     if not(155 <= event.pos[0] <= 800 and 155 <= event.pos[1] <= 800):
                         continue
                     x, y = board.get_cell(event.pos)
+                    if level[y][x] == 1 or towers_locations[y][x] != 0:
+                        continue
                     towers_locations[y][x] = tower_type
                     tower_picked = False
         clock.tick(FPS)
+        if count_enemies <= ENEMIES_AMOUNT:
+            enemy_sprite = Enemy_image(0, 14)
+            enemy = enemies._Enemy()
+            enemy_list[enemy] = (2, 0, 155 + 13 * 40, enemy_sprite)
         SCREEN.fill((0, 0, 0))
         show_info(SCREEN, wallet, CURRENT_ROUND, MAX_ROUND)
         board.render(SCREEN)
         towers_table.render(SCREEN)
         generate_level(level)
+        for key in enemy_list:
+            key[3].update(key)
         all_sprites.draw(SCREEN)
         pygame.display.flip()
     pygame.quit()
@@ -211,11 +261,12 @@ def main() -> None:
 images = {
     'tower': load_image('tower.png'),
     'grass': load_image('grass.png'),
-    'road': load_image('road.png')
+    'road': load_image('road.png'),
+    'enemy': load_image('enemy.png')
 }
-# enemy_image = load_image('enemy.png')
 
 all_sprites = pygame.sprite.Group()
+grass_borders = pygame.sprite.Group()
 
 CELL_WIDTH = CELL_HEIGHT = 40
 
